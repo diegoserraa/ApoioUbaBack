@@ -1,0 +1,32 @@
+### Teste GET - listar todos os pontos
+GET http://localhost:3000/pontos
+Accept: application/json
+
+###
+
+### Teste POST - criar um ponto de doação
+POST http://localhost:3000/pontos
+Content-Type: application/json
+
+{
+  "nome": "Escola Municipal Centro",
+  "endereco": "Rua sete lagoas",
+  "numero": "140",
+  "bairro": "santana",
+  "cidade": "Ubá",
+  "estado": "MG",
+  "cep": "36500-000",
+  "itens_recebidos": [
+    "Água",
+    "Roupas",
+    "Alimentos"
+  ],
+  "horario": "08h às 17h",
+  "telefone": "(32) 99999-9999"
+}
+
+###
+
+### Teste GET - listar novamente para ver se o ponto foi adicionado
+GET http://localhost:3000/pontos
+Accept: application/json

@@ -1,0 +1,35 @@
+### Criar uma OS
+POST http://localhost:3000/os
+Content-Type: application/json
+
+{
+  "maquina_id": 45,
+  "descricao": "ficou muito teste "
+}
+
+### Listar todas as OS
+GET http://localhost:3000/os
+Content-Type: application/json
+
+### Buscar OS por ID
+GET http://localhost:3000/os/2
+Content-Type: application/json
+
+### Listar OS de uma máquina específica
+GET http://localhost:3000/os/maquina/11
+Content-Type: application/json
+
+
+
+### Listar OS abertas
+GET http://localhost:3000/os/abertas
+Content-Type: application/json
+
+
+### Resolver OS (técnico)
+PUT http://localhost:3000/os/resolver/3
+Content-Type: application/json
+
+{
+  "resolucao": "brabo2"
+}

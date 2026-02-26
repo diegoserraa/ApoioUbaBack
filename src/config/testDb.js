@@ -1,13 +1,16 @@
+// src/services/testeSupabase.js
 const { supabase } = require('./db');
 
 async function test() {
   try {
-    const { data, error } = await supabase.from('pontos').select('*').limit(1);
-    if (error) throw error;
-    console.log('Conexão OK! Primeiro registro:', data[0]);
+    const { data, error } = await supabase.from('pontos_doacao').select('*');
+    if (error) {
+      console.error('Erro Supabase:', error);
+    } else {
+      console.log('Conexão OK! Dados:', data);
+    }
   } catch (err) {
-    console.error('Erro de conexão detalhado:');
-    console.error(err);
+    console.error('Erro inesperado:', err);
   }
 }
 

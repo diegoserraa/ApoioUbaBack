@@ -6,7 +6,7 @@ const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(
   process.env.SUPABASE_URL,      // URL do Supabase
   process.env.SUPABASE_ANON_KEY, // Chave anon
-{ global: { headers: { 'X-Client-Info': 'ApoioUbá/1.0' } } }
+//{ global: { headers: { 'X-Client-Info': 'ApoioUbá/1.0' } } }
 );
 
 module.exports = { supabase };

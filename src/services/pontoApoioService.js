@@ -4,7 +4,7 @@ const { supabase } = require('../config/db'); // client Supabase
 
 // Listar todos os pontos
 async function listar() {
-  const { data, error } = await supabase.from('pontos').select('*');
+  const { data, error } = await supabase.from('pontos_doacao').select('*');
   if (error) throw new Error(error.message);
   return data;
 }
@@ -29,7 +29,7 @@ async function criar(dados) {
   // =======================
 
   // Insere no Supabase
-  const { data, error } = await supabase.from('pontos').insert([dados]);
+  const { data, error } = await supabase.from('pontos_doacao').insert([dados]);
   if (error) throw new Error(error.message);
 
   return data[0];

@@ -9,7 +9,7 @@ POST http://localhost:3000/pontos
 Content-Type: application/json
 
 {
-  "nome": "Escola Municipal Centro",
+  "nome": "Escola Municipal Centrdedededededo",
   "endereco": "Rua sete lagoas",
   "numero": "140",
   "bairro": "santana",

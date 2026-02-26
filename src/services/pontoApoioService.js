@@ -1,4 +1,6 @@
 const { supabase } = require('../config/db'); // client Supabase
+const fetch = require('node-fetch');
+
 
 async function listar() {
   const { data, error } = await supabase.from('pontos').select('*');
@@ -28,6 +30,20 @@ async function criar(dados) {
   if (error) throw new Error(error.message);
 
   return data[0];
+}
+async function pegarCoordenadas(endereco) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}`;
+  const response = await fetch(url, { headers: { 'User-Agent': 'MinhaApp/1.0' } });
+  const data = await response.json();
+
+  if (data.length > 0) {
+    return {
+      latitude: parseFloat(data[0].lat),
+      longitude: parseFloat(data[0].lon)
+    };
+  } else {
+    return { latitude: null, longitude: null };
+  }
 }
 module.exports = {
   listar,

@@ -1,4 +1,4 @@
-const { supabase } = require('../config'); // client Supabase
+const { supabase } = require('../config/db'); // client Supabase
 
 async function listar() {
   const { data, error } = await supabase.from('pontos').select('*');
@@ -29,5 +29,7 @@ async function criar(dados) {
 
   return data[0];
 }
-
-// resto das funções: pegarCoordenadas e montarEnderecoCompleto
+module.exports = {
+  listar,
+  criar
+};

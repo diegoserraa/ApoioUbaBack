@@ -1,10 +1,13 @@
-const pontosRepository = require('../repositories/pontoApoioRepository');
+const { supabase } = require('../config'); // client Supabase
 
 async function listar() {
-  return await pontosRepository.listarPontos();
+  const { data, error } = await supabase.from('pontos').select('*');
+  if (error) throw new Error(error.message);
+  return data;
 }
 
 async function criar(dados) {
+  // validações
   if (!dados.nome || !dados.endereco || !dados.numero || !dados.cidade || !dados.estado) {
     throw new Error('Nome, endereço, número, cidade e estado são obrigatórios');
   }
@@ -15,47 +18,16 @@ async function criar(dados) {
 
   const enderecoCompleto = montarEnderecoCompleto(dados);
 
-  // Chama geocoding com endereço completo
+  // geocoding
   const coords = await pegarCoordenadas(enderecoCompleto);
-
   dados.latitude = coords.latitude;
   dados.longitude = coords.longitude;
 
-  return await pontosRepository.criarPonto(dados);
+  // inserção no Supabase
+  const { data, error } = await supabase.from('pontos').insert([dados]);
+  if (error) throw new Error(error.message);
+
+  return data[0];
 }
 
-// Função para pegar latitude e longitude a partir do endereço
-async function pegarCoordenadas(endereco) {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}`;
-  const response = await fetch(url, { headers: { 'User-Agent': 'MinhaApp/1.0' } });
-  const data = await response.json();
-
-  if (data.length > 0) {
-    return {
-      latitude: parseFloat(data[0].lat),
-      longitude: parseFloat(data[0].lon)
-    };
-  } else {
-    return { latitude: null, longitude: null };
-  }
-}
-
-function montarEnderecoCompleto(dados) {
-  const partes = [
-    dados.endereco,       // Rua
-    dados.numero,         // Número
-    dados.bairro,         // Bairro
-    dados.cidade,         // Cidade
-    dados.estado,         // Estado
-    'Brasil'              // País fixo
-  ];
-
-  // Remove campos vazios e junta tudo em uma string
-  return partes.filter(Boolean).join(', ');
-}
-
-module.exports = {
-  listar,
-  criar
-};
-
+// resto das funções: pegarCoordenadas e montarEnderecoCompleto

@@ -1,16 +1,11 @@
-require('dotenv').config();
+// config.js
+require('dotenv').config(); // Carrega variáveis do .env
+const { createClient } = require('@supabase/supabase-js');
 
-const { Pool } = require('pg');
+// Cria client do Supabase
+const supabase = createClient(
+  process.env.SUPABASE_URL,      // URL do Supabase
+  process.env.SUPABASE_ANON_KEY  // Chave anon
+);
 
-const isRender = process.env.RENDER === 'true'; // ✅ variável para detectar Render
-
-const pool = new Pool({
-  connectionString: process.env.DB_URL,
-  ssl: isRender ? { rejectUnauthorized: false } : false, // SSL só no Render
-});
-
-async function query(text, params) {
-  return pool.query(text, params);
-}
-
-module.exports = { query };
+module.exports = { supabase };

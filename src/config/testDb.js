@@ -1,12 +1,13 @@
-const db = require('./db');
+const { supabase } = require('./db');
 
 async function test() {
   try {
-    const res = await db.query('SELECT NOW()');
-    console.log('Conexão OK! Hora do banco:', res.rows[0]);
+    const { data, error } = await supabase.from('pontos').select('*').limit(1);
+    if (error) throw error;
+    console.log('Conexão OK! Primeiro registro:', data[0]);
   } catch (err) {
     console.error('Erro de conexão detalhado:');
-    console.error(err); // mostra o objeto completo do erro
+    console.error(err);
   }
 }
 

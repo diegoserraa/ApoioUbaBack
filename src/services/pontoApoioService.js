@@ -1,5 +1,6 @@
 // Service: lógica de negócios dos pontos de apoio
 const { supabase } = require('../config/db'); // client Supabase
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args)); // import dinâmico compatível
 
 // Listar todos os pontos
 async function listar() {
@@ -15,9 +16,7 @@ async function criar(dados) {
     throw new Error('Nome, endereço, número, cidade e estado são obrigatórios');
   }
 
-  if (!Array.isArray(dados.itens_recebidos)) {
-    dados.itens_recebidos = [];
-  }
+  if (!Array.isArray(dados.itens_recebidos)) dados.itens_recebidos = [];
 
   // Monta endereço completo para geocoding
   const enderecoCompleto = montarEnderecoCompleto(dados);
@@ -37,14 +36,16 @@ async function criar(dados) {
 // Função para pegar latitude e longitude usando Nominatim
 async function pegarCoordenadas(endereco) {
   try {
-    const fetch = require('node-fetch'); // Import dentro da função, garante que Render reconheça
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000); // 5s de timeout
 
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}`;
     const response = await fetch(url, {
       headers: { 'User-Agent': 'ApoioUbá/1.0' },
-      timeout: 5000 // evita travar por muito tempo
+      signal: controller.signal
     });
 
+    clearTimeout(timeout);
     const data = await response.json();
 
     if (data.length > 0) {
@@ -57,7 +58,7 @@ async function pegarCoordenadas(endereco) {
     }
   } catch (err) {
     console.error('Erro ao pegar coordenadas:', err.message);
-    return { latitude: null, longitude: null }; // não quebra o backend
+    return { latitude: null, longitude: null };
   }
 }
 

@@ -1,12 +1,24 @@
 const { supabase } = require('../config/db');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
+const TIPOS_VALIDOS = ['doacao', 'abrigo', 'comida'];
+
 // ------------------------
 // Listar todos os pontos
 // ------------------------
-async function listar() {
-  const { data, error } = await supabase.from('pontos_doacao').select('*');
+async function listar(tipo) {
+  const tipoNormalizado = (tipo || 'doacao').toLowerCase().trim();
+
+  let query = supabase
+    .from('pontos_apoio')
+    .select('*')
+    .eq('ativo', true)
+    .eq('tipo', tipoNormalizado);
+
+  const { data, error } = await query;
+
   if (error) throw new Error(error.message);
+
   return data || [];
 }
 
@@ -19,23 +31,40 @@ async function criar(dados) {
     throw new Error('Nome, endereço, número, cidade e estado são obrigatórios');
   }
 
-  // Garantir array para itens recebidos
-  if (!Array.isArray(dados.itens_recebidos)) dados.itens_recebidos = [];
+  // ✅ Validação de tipo
+  if (!dados.tipo || !TIPOS_VALIDOS.includes(dados.tipo)) {
+    throw new Error('Tipo inválido. Use: doacao, abrigo ou comida');
+  }
+
+  // ✅ Itens só para doação
+  if (dados.tipo === 'doacao') {
+    if (!Array.isArray(dados.itens_recebidos)) {
+      dados.itens_recebidos = [];
+    }
+  } else {
+    dados.itens_recebidos = null;
+  }
+
+  // Sempre ativo ao criar
+  dados.ativo = true;
 
   // Monta endereço completo
   const enderecoCompleto = montarEnderecoCompleto(dados);
 
-  // Pega coordenadas de forma segura e rápida
+  // Pega coordenadas
   const coords = await pegarCoordenadas(enderecoCompleto);
   dados.latitude = coords.latitude ?? null;
   dados.longitude = coords.longitude ?? null;
 
   // Inserir no Supabase
-  const { data, error } = await supabase.from('pontos_doacao').insert([dados]);
+  const { data, error } = await supabase
+    .from('pontos_apoio')
+    .insert([dados])
+    .select();
+
   if (error) throw new Error(error.message);
 
-  // Retornar primeiro elemento ou uma mensagem
-  return data?.[0] ?? { message: 'Ponto criado, mas nenhum dado retornado' };
+  return data?.[0] ?? { message: 'Ponto criado com sucesso' };
 }
 
 // ------------------------
@@ -43,48 +72,17 @@ async function criar(dados) {
 // ------------------------
 async function pegarCoordenadas(endereco) {
   try {
-    // Tenta as duas APIs em paralelo para reduzir tempo
     const [nominatim, opencage] = await Promise.allSettled([
       buscarNominatim(endereco),
       buscarOpenCage(endereco)
     ]);
 
-    // Prioriza Nominatim se válido
-    if (nominatim.status === 'fulfilled' && nominatim.value.latitude && nominatim.value.longitude) {
+    if (nominatim.status === 'fulfilled' && nominatim.value.latitude) {
       return nominatim.value;
     }
 
-    // Senão usa OpenCage
-    if (opencage.status === 'fulfilled' && opencage.value.latitude && opencage.value.longitude) {
+    if (opencage.status === 'fulfilled' && opencage.value.latitude) {
       return opencage.value;
-    }
-
-    // Nenhuma coordenada encontrada
-    return { latitude: null, longitude: null };
-  } catch (err) {
-    console.error('Erro ao pegar coordenadas:', err.message);
-    return { latitude: null, longitude: null };
-  }
-}
-
-// ------------------------
-// Busca Nominatim (OpenStreetMap)
-// ------------------------
-async function buscarNominatim(endereco) {
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}`;
-    const response = await fetch(url, {
-      headers: { 'User-Agent': 'ApoioUbá/1.0' },
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-
-    const data = await response.json();
-    if (Array.isArray(data) && data.length > 0) {
-      return { latitude: parseFloat(data[0].lat), longitude: parseFloat(data[0].lon) };
     }
 
     return { latitude: null, longitude: null };
@@ -94,7 +92,34 @@ async function buscarNominatim(endereco) {
 }
 
 // ------------------------
-// Busca OpenCage
+async function buscarNominatim(endereco) {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}`;
+    const response = await fetch(url, {
+      headers: { 'User-Agent': 'ApoioUba/1.0' },
+      signal: controller.signal
+    });
+
+    clearTimeout(timeout);
+
+    const data = await response.json();
+
+    if (Array.isArray(data) && data.length > 0) {
+      return {
+        latitude: parseFloat(data[0].lat),
+        longitude: parseFloat(data[0].lon)
+      };
+    }
+
+    return { latitude: null, longitude: null };
+  } catch {
+    return { latitude: null, longitude: null };
+  }
+}
+
 // ------------------------
 async function buscarOpenCage(endereco) {
   try {
@@ -119,10 +144,16 @@ async function buscarOpenCage(endereco) {
 }
 
 // ------------------------
-// Monta endereço completo
-// ------------------------
 function montarEnderecoCompleto(dados) {
-  const partes = [dados.endereco, dados.numero, dados.bairro, dados.cidade, dados.estado, 'Brasil'];
+  const partes = [
+    dados.endereco,
+    dados.numero,
+    dados.bairro,
+    dados.cidade,
+    dados.estado,
+    'Brasil'
+  ];
+
   return partes.filter(Boolean).join(', ');
 }
 

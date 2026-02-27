@@ -3,7 +3,12 @@ const pontosService = require('../services/pontoApoioService');
 
 async function listarPontos(req, res) {
   try {
-    const pontos = await pontosService.listar();
+    const { tipo } = req.query;
+
+    console.log("Tipo recebido na API:", tipo); // 👈 debug
+
+    const pontos = await pontosService.listar(tipo);
+
     res.status(200).json(pontos);
   } catch (error) {
     res.status(500).json({ error: error.message });

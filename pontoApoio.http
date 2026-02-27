@@ -11,6 +11,7 @@ Content-Type: application/json
 {
   "nome": "SESI/SENAI Ubá",
   "endereco": "Avenida Jesus Brandão",
+  "tipo":"comida",
   "numero": "452",
   "bairro": "San Raphael II",
   "cidade": "Ubá",

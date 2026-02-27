@@ -31,6 +31,7 @@ async function listar(tipo) {
 // Criar um ponto
 // ------------------------
 async function criar(dados) {
+  process.stdout.write("🔥 SERVICE EXECUTADO 🔥\n");
   console.log('📥 Criando ponto:', dados.nome);
 
   if (!dados.nome || !dados.endereco || !dados.numero || !dados.cidade || !dados.estado) {

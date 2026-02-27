@@ -1,5 +1,6 @@
 const { supabase } = require('../config/db');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const jwt = require('jsonwebtoken');
 
 const TIPOS_VALIDOS = ['doacao', 'abrigo', 'comida'];
 
@@ -199,4 +200,22 @@ function montarEnderecoCompleto(dados) {
     .join(', ');
 }
 
-module.exports = { listar, criar };
+
+function loginAdmin(user, password) {
+  if (
+    user !== process.env.ADMIN_USER ||
+    password !== process.env.ADMIN_PASSWORD
+  ) {
+    throw new Error('Credenciais inválidas');
+  }
+
+  const token = jwt.sign(
+    { role: 'admin' },
+    process.env.JWT_SECRET,
+    { expiresIn: '2h' }
+  );
+
+  return { token };
+}
+
+module.exports = { listar, criar, loginAdmin};

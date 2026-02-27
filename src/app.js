@@ -23,26 +23,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-app.get('/test-geocode', async (req, res) => {
-  try {
-    const endereco = "Rua Sete Lagoas, 140, Santana, Ubá, MG, Brasil";
 
-    const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(endereco)}&key=${process.env.OPENCAGE_KEY}&limit=1&countrycode=BR`;
-
-    const response = await fetch(url);
-    const data = await response.json();
-
-    res.json({
-      status: response.status,
-      results: data
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      error: error.message
-    });
-  }
-});
 // Rotas
 app.use('/pontos', pontosRoutes);
 

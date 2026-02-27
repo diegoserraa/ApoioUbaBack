@@ -7,9 +7,10 @@ Accept: application/json
 ### Teste POST - criar um ponto de doação
 POST http://localhost:3000/pontos
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzIyMTkyODYsImV4cCI6MTc3MjIyNjQ4Nn0.ikUiSg4qT2_zR2iwjKOEUigDy0nShosX9yAERteS4gY
 
 {
-  "nome": "diego",
+  "nome": "testeteste",
   "endereco": "rua sete lagoas",
   "tipo":"doacao",
   "numero": "140",
@@ -33,3 +34,15 @@ Content-Type: application/json
 ### Teste GET - listar novamente para ver se o ponto foi adicionado
 GET http://localhost:3000/pontos?tipo=abrigo
 Accept: application/json
+
+###
+
+POST http://localhost:3000/pontos/login
+Content-Type: application/json
+
+{
+  "user": "diego",
+  "password": "9834@ygd$"
+}
+
+###

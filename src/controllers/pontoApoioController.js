@@ -24,7 +24,20 @@ async function criarPonto(req, res) {
   }
 }
 
+async function login(req, res) {
+  try {
+    const { user, password } = req.body;
+
+    const resultado = pontosService.loginAdmin(user, password);
+
+    res.status(200).json(resultado);
+  } catch (error) {
+    res.status(401).json({ error: error.message });
+  }
+}
+
 module.exports = {
   listarPontos,
-  criarPonto
+  criarPonto,
+  login
 };

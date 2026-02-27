@@ -4,6 +4,15 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 dotenv.config();
 
+// 🔎 DEBUG DE AMBIENTE
+console.log("====================================");
+console.log("🚀 INICIANDO SERVIDOR");
+console.log("🌍 NODE_ENV:", process.env.NODE_ENV);
+console.log("🔑 OPENCAGE_KEY existe?", !!process.env.OPENCAGE_KEY);
+console.log("🔑 OPENCAGE_KEY valor:", process.env.OPENCAGE_KEY);
+console.log("🗄 SUPABASE_URL existe?", !!process.env.SUPABASE_URL);
+console.log("====================================");
+
 const pontosRoutes = require('./routes/pontoApoioRoutes');
 
 const app = express();

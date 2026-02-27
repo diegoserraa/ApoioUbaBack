@@ -9,15 +9,20 @@ const TIPOS_VALIDOS = ['doacao', 'abrigo', 'comida'];
 async function listar(tipo) {
   const tipoNormalizado = (tipo || 'doacao').toLowerCase().trim();
 
-  let query = supabase
+  console.log('📌 Listando pontos tipo:', tipoNormalizado);
+
+  const { data, error } = await supabase
     .from('pontos_apoio')
     .select('*')
     .eq('ativo', true)
     .eq('tipo', tipoNormalizado);
 
-  const { data, error } = await query;
+  if (error) {
+    console.error('❌ Erro ao listar:', error);
+    throw new Error(error.message);
+  }
 
-  if (error) throw new Error(error.message);
+  console.log('✅ Pontos encontrados:', data?.length || 0);
 
   return data || [];
 }
@@ -26,17 +31,16 @@ async function listar(tipo) {
 // Criar um ponto
 // ------------------------
 async function criar(dados) {
-  // Validação básica
+  console.log('📥 Criando ponto:', dados.nome);
+
   if (!dados.nome || !dados.endereco || !dados.numero || !dados.cidade || !dados.estado) {
     throw new Error('Nome, endereço, número, cidade e estado são obrigatórios');
   }
 
-  // ✅ Validação de tipo
   if (!dados.tipo || !TIPOS_VALIDOS.includes(dados.tipo)) {
     throw new Error('Tipo inválido. Use: doacao, abrigo ou comida');
   }
 
-  // ✅ Itens só para doação
   if (dados.tipo === 'doacao') {
     if (!Array.isArray(dados.itens_recebidos)) {
       dados.itens_recebidos = [];
@@ -45,48 +49,62 @@ async function criar(dados) {
     dados.itens_recebidos = null;
   }
 
-  // Sempre ativo ao criar
   dados.ativo = true;
 
-  // Monta endereço completo
   const enderecoCompleto = montarEnderecoCompleto(dados);
+  console.log('📍 Endereço completo:', enderecoCompleto);
 
-  // Pega coordenadas
   const coords = await pegarCoordenadas(enderecoCompleto);
+
+  console.log('🛰 Coordenadas retornadas:', coords);
+
   dados.latitude = coords.latitude ?? null;
   dados.longitude = coords.longitude ?? null;
 
-  // Inserir no Supabase
   const { data, error } = await supabase
     .from('pontos_apoio')
     .insert([dados])
     .select();
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error('❌ Erro ao inserir no Supabase:', error);
+    throw new Error(error.message);
+  }
+
+  console.log('✅ Ponto criado com sucesso');
 
   return data?.[0] ?? { message: 'Ponto criado com sucesso' };
 }
 
 // ------------------------
-// Função que tenta Nominatim e OpenCage em paralelo
-// ------------------------
 async function pegarCoordenadas(endereco) {
+  console.log('🌎 Iniciando busca de coordenadas...');
+  console.log('🔑 OPENCAGE_KEY existe?', !!process.env.OPENCAGE_KEY);
+
   try {
     const [nominatim, opencage] = await Promise.allSettled([
       buscarNominatim(endereco),
       buscarOpenCage(endereco)
     ]);
 
-    if (nominatim.status === 'fulfilled' && nominatim.value.latitude) {
+    console.log('📡 Resultado Nominatim:', nominatim);
+    console.log('📡 Resultado OpenCage:', opencage);
+
+    if (nominatim.status === 'fulfilled' && nominatim.value?.latitude) {
+      console.log('✅ Usando Nominatim');
       return nominatim.value;
     }
 
-    if (opencage.status === 'fulfilled' && opencage.value.latitude) {
+    if (opencage.status === 'fulfilled' && opencage.value?.latitude) {
+      console.log('✅ Usando OpenCage');
       return opencage.value;
     }
 
+    console.log('⚠ Nenhuma API retornou coordenadas válidas');
+
     return { latitude: null, longitude: null };
-  } catch {
+  } catch (error) {
+    console.error('🔥 ERRO GRAVE em pegarCoordenadas:', error);
     return { latitude: null, longitude: null };
   }
 }
@@ -94,16 +112,23 @@ async function pegarCoordenadas(endereco) {
 // ------------------------
 async function buscarNominatim(endereco) {
   try {
+    console.log('🔎 Tentando Nominatim...');
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
 
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}`;
+
     const response = await fetch(url, {
-      headers: { 'User-Agent': 'ApoioUba/1.0' },
+      headers: {
+        'User-Agent': 'ApoioUba/1.0 (contato@apoio.com)'
+      },
       signal: controller.signal
     });
 
     clearTimeout(timeout);
+
+    console.log('📡 Status Nominatim:', response.status);
 
     const data = await response.json();
 
@@ -114,8 +139,11 @@ async function buscarNominatim(endereco) {
       };
     }
 
+    console.log('⚠ Nominatim não encontrou resultados');
+
     return { latitude: null, longitude: null };
-  } catch {
+  } catch (error) {
+    console.error('❌ Erro Nominatim:', error.message);
     return { latitude: null, longitude: null };
   }
 }
@@ -123,11 +151,21 @@ async function buscarNominatim(endereco) {
 // ------------------------
 async function buscarOpenCage(endereco) {
   try {
+    console.log('🔎 Tentando OpenCage...');
+
     const key = process.env.OPENCAGE_KEY;
-    if (!key) return { latitude: null, longitude: null };
+
+    if (!key) {
+      console.error('❌ OPENCAGE_KEY não encontrada no ambiente');
+      return { latitude: null, longitude: null };
+    }
 
     const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(endereco)}&key=${key}&countrycode=BR&limit=1&language=pt`;
+
     const response = await fetch(url);
+
+    console.log('📡 Status OpenCage:', response.status);
+
     const data = await response.json();
 
     if (data.results && data.results.length > 0) {
@@ -137,24 +175,27 @@ async function buscarOpenCage(endereco) {
       };
     }
 
+    console.log('⚠ OpenCage não encontrou resultados');
+
     return { latitude: null, longitude: null };
-  } catch {
+  } catch (error) {
+    console.error('❌ Erro OpenCage:', error.message);
     return { latitude: null, longitude: null };
   }
 }
 
 // ------------------------
 function montarEnderecoCompleto(dados) {
-  const partes = [
+  return [
     dados.endereco,
     dados.numero,
     dados.bairro,
     dados.cidade,
     dados.estado,
     'Brasil'
-  ];
-
-  return partes.filter(Boolean).join(', ');
+  ]
+    .filter(Boolean)
+    .join(', ');
 }
 
 module.exports = { listar, criar };

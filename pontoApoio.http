@@ -9,11 +9,11 @@ POST http://localhost:3000/pontos
 Content-Type: application/json
 
 {
-  "nome": "SESI/SENAI Ubá",
-  "endereco": "Avenida Jesus Brandão",
-  "tipo":"comida",
-  "numero": "452",
-  "bairro": "San Raphael II",
+  "nome": "diego",
+  "endereco": "rua sete lagoas",
+  "tipo":"doacao",
+  "numero": "140",
+  "bairro": "Santana",
   "cidade": "Ubá",
   "estado": "MG",
   "cep": "36500-000",
@@ -25,11 +25,11 @@ Content-Type: application/json
     "Fraudas"
   ],
   "horario": "08h às 18h",
-  "telefone": "(31) 97166-9205"
+  "telefone": "(22) 2222222222"
 }
 
 ###
 
 ### Teste GET - listar novamente para ver se o ponto foi adicionado
-GET http://localhost:3000/pontos
+GET http://localhost:3000/pontos?tipo=abrigo
 Accept: application/json

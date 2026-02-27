@@ -17,6 +17,12 @@ console.log("====================================");
 
 const pontosRoutes = require('./routes/pontoApoioRoutes');
 
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
+
 app.get('/test-geocode', async (req, res) => {
   try {
     const endereco = "Rua Sete Lagoas, 140, Santana, Ubá, MG, Brasil";
@@ -37,12 +43,6 @@ app.get('/test-geocode', async (req, res) => {
     });
   }
 });
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(cors());
-app.use(express.json());
-
 // Rotas
 app.use('/pontos', pontosRoutes);
 

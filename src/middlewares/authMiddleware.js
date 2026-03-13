@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-function verificarAdmin(req, res, next) {
+function verificarToken(req, res, next) {
   const auth = req.headers.authorization;
 
   if (!auth) {
@@ -10,11 +10,15 @@ function verificarAdmin(req, res, next) {
   const token = auth.split(' ')[1];
 
   try {
-    jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("USUÁRIO AUTENTICADO:", decoded);
+
+    req.user = decoded; // agora você tem o id do usuário
+
     next();
   } catch (error) {
     return res.status(403).json({ error: 'Token inválido ou expirado' });
   }
 }
 
-module.exports = { verificarAdmin };
+module.exports = { verificarToken };

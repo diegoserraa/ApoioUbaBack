@@ -14,8 +14,9 @@ console.log("🗄 SUPABASE_URL existe?", !!process.env.SUPABASE_URL);
 console.log("====================================");
 
 
-
+const authRoutes = require('./routes/authRoutes')
 const pontosRoutes = require('./routes/pontoApoioRoutes');
+const pedidosRoutes = require('./routes/pedidosEntregaRoutes')
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,7 +26,9 @@ app.use(express.json());
 
 
 // Rotas
+app.use('/auth', authRoutes);
 app.use('/pontos', pontosRoutes);
+app.use('/pedidos', pedidosRoutes);
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT} 🚀`);

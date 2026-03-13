@@ -7,7 +7,7 @@ Accept: application/json
 ### Teste POST - criar um ponto de doação
 POST http://localhost:3000/pontos
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NzIyMTkyODYsImV4cCI6MTc3MjIyNjQ4Nn0.ikUiSg4qT2_zR2iwjKOEUigDy0nShosX9yAERteS4gY
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImVkYjRkMzk0LWY3MmUtNDAxMS1iYWIxLTkzOGE2Yzk5YWVmNyIsImlhdCI6MTc3MjM5NDY1MCwiZXhwIjoxNzcyNDAxODUwfQ.jYF41q7MtgnCfuEKvTWAhX2AEm1LJ5sDCsZATvAg_nw
 
 {
   "nome": "testeteste",
@@ -37,12 +37,6 @@ Accept: application/json
 
 ###
 
-POST http://localhost:3000/pontos/login
-Content-Type: application/json
-
-{
-  "user": "diego",
-  "password": "9834@ygd$"
-}
-
-###
+### Teste PATH - Inativar e Ativar ponto de Apoio
+PATCH http://localhost:3000/pontos/411d9b2c-10e1-4d20-9e12-fd3679e9ee35/ativo
+Accept: application/json

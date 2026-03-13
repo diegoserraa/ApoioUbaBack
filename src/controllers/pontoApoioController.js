@@ -24,20 +24,32 @@ async function criarPonto(req, res) {
   }
 }
 
-async function login(req, res) {
+async function alterarStatus(req, res) {
   try {
-    const { user, password } = req.body;
+    const { id } = req.params;
+    const { ativo } = req.body;
 
-    const resultado = pontosService.loginAdmin(user, password);
+    if (typeof ativo !== "boolean") {
+      return res.status(400).json({
+        error: "Campo 'ativo' deve ser boolean (true ou false)",
+      });
+    }
 
-    res.status(200).json(resultado);
+    const pontoAtualizado = await pontosService.alterarStatus(id, ativo);
+
+    res.json({
+      message: ativo
+        ? "Ponto ativado com sucesso"
+        : "Ponto inativado com sucesso",
+      data: pontoAtualizado,
+    });
   } catch (error) {
-    res.status(401).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 }
 
 module.exports = {
   listarPontos,
   criarPonto,
-  login
+  alterarStatus
 };

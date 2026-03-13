@@ -1,0 +1,23 @@
+### Criar novo pedido
+POST http://localhost:3000/pedidos
+Content-Type: application/json
+
+{
+  "nome": "Maria Aparecida Souza",
+  "telefone": "(32) 99999-8888",
+  "endereco": "Rua José Augusto da Silva, 120",
+  "bairro": "Centro",
+  "itens": [
+    "Arroz 5kg",
+    "Feijão 1kg",
+    "Leite integral"
+  ],
+  "justificativa_motivo": "idoso",
+  "justificativa_obs": "Tenho dificuldade para sair de casa."
+}
+
+### Listar pedidos
+GET http://localhost:3000/pedidos
+
+###
+

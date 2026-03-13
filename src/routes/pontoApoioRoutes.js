@@ -2,11 +2,11 @@
 const express = require('express');
 const router = express.Router();
 const pontosController = require('../controllers/pontoApoioController');
-const { verificarAdmin } = require('../middlewares/authMiddleware');
+const { verificarToken } = require('../middlewares/authMiddleware');
 
 
 router.get('/', pontosController.listarPontos);
-router.post('/', verificarAdmin, pontosController.criarPonto);
-router.post('/login', pontosController.login);
+router.post('/', verificarToken, pontosController.criarPonto);
+router.patch("/:id/ativo", verificarToken, pontosController.alterarStatus);
 
 module.exports = router;
